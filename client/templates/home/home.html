@@ -1,0 +1,216 @@
+<template name="home">
+	<div class="row">
+		<div class="medium-12 columns space-from-top ">
+			<form>
+				<h3>Learn and Interact More</h3>
+				<div class="large-12 columns">
+					<div class="row">
+        				<div class="small-2 columns">
+          					<label for="right-label" class="right inline">Start Here!!</label>
+        				</div>
+				        <div class="small-10 columns">
+				        	<div class="row collapse">
+						      	<div class="small-10 columns">
+						           <input id="dep" class="controls" type="text" placeholder="Search Box">
+						        </div>
+						        <div class="small-2 columns">
+						          <span class="postfix"  onclick="getLocation()"><i class="fa fa-location-arrow fa-1x" aria-hidden="true"></i></span>
+						        </div>
+		  				   </div>
+				         
+				        </div>
+      				</div>
+				</div>
+				<div class="large-12 columns">
+					<div class="row">
+        				<div class="small-2 columns">
+          					<label for="right-label" class="right inline">End Location</label>
+        				</div>
+				        <div class="small-10 columns">
+				          <input type="text" id="des" placeholder="Please Enter Your Destination">
+				        </div>
+      				</div>
+				</div>
+				 <div class="large-12 columns">
+					<div class="row">	
+					   <div class="small-2 columns">
+          					<label for="right-label" class="right inline">Vicinity(Kms) </label>
+       				   </div>	
+       				   <div class="small-10 columns">	
+						    <div class="row">
+  <div class="small-10 columns">
+    <div id="slider-range-max"></div>
+  </div>
+  <div class="small-2 columns">
+    <!-- <input type="number" id="days-off-count" value="28" /> -->
+    <input type="text" id="amount" readonly style="border:0; color:#f6931f; font-weight:bold;">
+  </div>
+</div> 
+
+
+
+                           </div>
+                                 
+                          </div>
+	  				   </div>
+  				   
+				
+				<button class="routes" id="go">Explore</button>
+			</form>
+		</div>
+		<div class="medium- columns space-from-top">
+			<div id="map"></div>
+		</div>
+		<hr>
+	</div>
+
+	<div class="row list-container">
+		<h1>Find out the hot topics and current events and the cultural interactivity  in any region</h1>	
+		 <div class="small-8 large-centered columns list">
+		 	<table>
+			  <thead>
+			    <tr>
+			      <th width="150">Areas</th>
+			      <th width="150">Route and HotSpots</th>
+			     
+			      <th width="150">Fun Facts and People</th>
+			    </tr>
+			  </thead>
+			  <tbody>
+			    <tr>
+			      <td>Bridgeport</td>
+			      <td>Coming Soon</td>
+			      
+			      <td>Tom Davis and the famous Museums</td>
+			    </tr>
+			     <tr>
+			      <td>Dallas</td>
+			      <td>Coming Soon</td>
+			      
+			      <td>Chris Harris and the fun Stuff</td>
+			    </tr>
+			     <tr>
+			      <td>London</td>
+			      <td>Coming Soon</td>
+			      
+			      <td>Mary Poppins and the history</td>
+			    </tr>
+			     
+			  </tbody>
+			</table>
+		 </div>
+	</div>
+ 
+	
+    <script>
+
+    var map;
+      var infowindow;
+    
+    $(function() {
+    $( "#slider-range-max" ).slider({
+      range: "max",
+      min: 1,
+      max: 10,
+      value: 2,
+      slide: function( event, ui ) {
+        $( "#amount" ).val( ui.value );
+      }
+    });
+    // $( "#amount" ).val( $( "#slider-range-max" ).slider( "value" ) );
+  });
+
+
+
+ //   $(function(){
+ //  $('#date').fdatepicker({
+	// 	format: 'mm-dd-yyyy hh:ii',
+	// 	disableDblClickSelection: true,
+	// 	pickTime: true
+	// });
+ //  });
+   
+ function initMap() {
+ 	var input = document.getElementById('dep');
+    var destination=document.getElementById('des');
+	var searchBox = new google.maps.places.SearchBox(input);
+	var serachBox2=new google.maps.places.SearchBox(destination);
+	var directionsService = new google.maps.DirectionsService;
+	var directionsDisplay = new google.maps.DirectionsRenderer;
+	var map = new google.maps.Map(document.getElementById('map'), {
+		zoom: 3,
+		center: {lat: 41.85, lng: -87.65}
+	});
+  directionsDisplay.setMap(map);
+  var onChangeHandler = function() {
+    calculateAndDisplayRoute(directionsService, directionsDisplay);
+  };
+  document.getElementById('go').addEventListener('click',function(event){
+  	event.preventDefault();
+  	onChangeHandler();
+  });
+
+  map.addListener('click', function(e) {
+          placeMarkerAndPanTo(e.latLng, map);
+        });
+
+  infowindow = new google.maps.InfoWindow();
+        var service = new google.maps.places.PlacesService(map);
+        service.nearbySearch({
+          location: latLng,
+          radius: 500,
+          type: ['store']
+        }, callback);
+
+ }
+
+ function callback(results, status) {
+        if (status === google.maps.places.PlacesServiceStatus.OK) {
+          for (var i = 0; i < results.length; i++) {
+            createMarker(results[i]);
+          }
+        }
+      }
+  
+  //this to create markers in the vicinity
+      function createMarker(place) {
+        var placeLoc = place.geometry.location;
+        var marker = new google.maps.Marker({
+          map: map,
+          position: place.geometry.location
+        });
+
+        google.maps.event.addListener(marker, 'click', function() {
+          infowindow.setContent(place.name);
+          infowindow.open(map, this);
+        });
+      }
+
+
+
+function placeMarkerAndPanTo(latLng, map) {
+  var marker = new google.maps.Marker({
+    position: latLng,
+    map: map
+  });
+  map.panTo(latLng);
+}
+
+
+function calculateAndDisplayRoute(directionsService, directionsDisplay) {
+  directionsService.route({
+    origin: document.getElementById('dep').value,
+    destination: document.getElementById('des').value,
+    travelMode: google.maps.TravelMode.DRIVING
+  }, function(response, status) {
+    if (status === google.maps.DirectionsStatus.OK) {
+      directionsDisplay.setDirections(response);
+    } else {
+      window.alert('Directions request failed due to ' + status);
+    }
+  });
+}
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=put_your_API_key_here&libraries=places&callback=initMap"
+         async defer></script>
+</template>
